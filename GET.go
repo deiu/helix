@@ -2,14 +2,12 @@ package helix
 
 import (
 	"github.com/gocraft/web"
-	"log"
 )
 
 func (c *Context) GetHandler(w web.ResponseWriter, req *web.Request) {
 	var err error
 	ctype := ""
 	acceptList, _ := conneg(req.Request)
-	log.Printf("%+v %+v\n", acceptList, req.Header.Get("Accept"))
 	if len(acceptList) > 0 && acceptList[0].SubType != "*" {
 		ctype, err = acceptList.Negotiate(serializerMimes...)
 		if err != nil {

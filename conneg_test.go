@@ -70,7 +70,7 @@ func TestNegotiateWildcardMatch(t *testing.T) {
 }
 
 func TestNegotiateInvalidMediaRange(t *testing.T) {
-	_, err := mockAccept("something/valid, rubbish, other/valid")
+	_, err := mockAccept("something/valid, fail, other/valid")
 	assert.Error(t, err)
 }
 

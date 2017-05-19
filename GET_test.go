@@ -23,16 +23,25 @@ func Test_GET_NonRDF(t *testing.T) {
 	assert.Equal(t, 200, res.StatusCode)
 }
 
+func Test_GET_RDFNotFound(t *testing.T) {
+	req, err := http.NewRequest("GET", testServer.URL+"/bar", nil)
+	assert.NoError(t, err)
+	req.Header.Add("Accept", "text/turtle")
+	res, err := testClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 404, res.StatusCode)
+}
+
 func Test_GET_NotAcceptable(t *testing.T) {
 	req, err := http.NewRequest("GET", testServer.URL+"/foo", nil)
 	assert.NoError(t, err)
-	req.Header.Add("Content-Type", "foo")
+	req.Header.Add("Accept", "text/foo")
 	res, err := testClient.Do(req)
 	assert.NoError(t, err)
 	body, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
-	assert.Equal(t, 200, res.StatusCode)
-	assert.Empty(t, body)
+	assert.Equal(t, 406, res.StatusCode)
+	assert.NotEmpty(t, body)
 }
 
 func BenchmarkGET(b *testing.B) {
