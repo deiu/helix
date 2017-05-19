@@ -10,7 +10,7 @@ import (
 )
 
 func Test_Conf_NewConfig(t *testing.T) {
-	conf := NewHelixConfig()
+	conf := NewConfig()
 	assert.Equal(t, "8443", conf.Port)
 	assert.Equal(t, "test_cert.pem", conf.Cert)
 	assert.Equal(t, "test_key.pem", conf.Key)
@@ -18,9 +18,9 @@ func Test_Conf_NewConfig(t *testing.T) {
 
 func Test_Conf_LoadJSONFile(t *testing.T) {
 	file := "test_conf.json"
-	conf := NewHelixConfig()
+	conf := NewConfig()
 	// fail to load inexisting file
-	conf = NewHelixConfig()
+	conf = NewConfig()
 	err := conf.LoadJSONFile(file)
 	assert.Error(t, err)
 	// change some config value
@@ -31,7 +31,7 @@ func Test_Conf_LoadJSONFile(t *testing.T) {
 	err = ioutil.WriteFile(file, data, 0644)
 	assert.NoError(t, err)
 	// read file
-	conf = NewHelixConfig()
+	conf = NewConfig()
 	err = conf.LoadJSONFile(file)
 	assert.NoError(t, err)
 	assert.Equal(t, "8888", conf.Port)

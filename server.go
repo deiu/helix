@@ -30,22 +30,21 @@ type (
 
 	Context struct {
 		Body   string
-		Config *HelixConfig
+		Config *Config
 		Store  *GraphStore
 	}
 )
 
-func NewServer(config *HelixConfig) *web.Router {
+func NewServer(config *Config) *web.Router {
 	ctx := Context{}
 	ctx.Config = config
-	logger = zerolog.New(config.GetLogger()).With().Timestamp().Logger()
-	if !config.Debug {
+	logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
+	if config.Debug == false {
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
 
 	currentRoot, _ := os.Getwd()
 	config.StaticDir = path.Join(currentRoot, config.StaticDir)
-	println(config.StaticDir)
 
 	// Middleware(web.StaticMiddleware(StaticRoot, web.StaticOption{Prefix: "/assets/"})).
 	router := web.New(ctx). // Create your router
@@ -59,9 +58,6 @@ func NewServer(config *HelixConfig) *web.Router {
 				Delete("/:*", (&ctx).DeleteHandler).
 				Patch("/:*", (&ctx).PatchHandler).
 				NotFound((*Context).NotFound)
-	// Start server
-	println("Listening on", "http://"+config.Hostname+":"+config.Port)
-
 	return router
 }
 

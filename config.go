@@ -2,14 +2,13 @@ package helix
 
 import (
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 )
 
-type HelixConfig struct {
+type Config struct {
 	Conf      string
 	Port      string
 	Debug     bool
@@ -21,8 +20,8 @@ type HelixConfig struct {
 	Key       string
 }
 
-func NewHelixConfig() *HelixConfig {
-	return &HelixConfig{
+func NewConfig() *Config {
+	return &Config{
 		Port:    "8443",
 		Root:    GetCurrentRoot(),
 		Debug:   false,
@@ -33,7 +32,7 @@ func NewHelixConfig() *HelixConfig {
 }
 
 // LoadJSONFile loads server configuration
-func (c *HelixConfig) LoadJSONFile(filename string) error {
+func (c *Config) LoadJSONFile(filename string) error {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
@@ -51,15 +50,4 @@ func GetCurrentRoot() string {
 		root += "/"
 	}
 	return root
-}
-
-func (c *HelixConfig) GetLogger() io.Writer {
-	if len(c.Logfile) == 0 {
-		return os.Stderr
-	}
-	w, err := os.OpenFile(c.Logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return w
 }
