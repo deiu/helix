@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	rdf "github.com/deiu/rdf2go"
 	"github.com/gocraft/web"
 	"github.com/rs/zerolog"
 )
@@ -15,31 +16,28 @@ var (
 	methodsAll    = []string{
 		"OPTIONS", "HEAD", "GET", "POST", "PUT", "PATCH", "DELETE",
 	}
-	logger zerolog.Logger
+	logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
 )
 
 type (
-	GraphStore struct {
-		Subject   map[string]string
-		Predicate map[string]string
-		Object    map[string]string
-		Graph     map[string]string
-		Version   string
-		Current   bool
-	}
-
 	Context struct {
-		Body   string
 		Config *Config
-		Store  *GraphStore
+		Store  map[string]*rdf.Graph
 	}
 )
 
+func NewContext() *Context {
+	return &Context{
+		Config: NewConfig(),
+		Store:  make(map[string]*rdf.Graph),
+	}
+}
+
 func NewServer(config *Config) *web.Router {
-	ctx := Context{}
+	ctx := NewContext()
 	ctx.Config = config
-	logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
-	if config.Debug == false {
+
+	if !config.Logging {
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
 
@@ -47,17 +45,21 @@ func NewServer(config *Config) *web.Router {
 	config.StaticDir = path.Join(currentRoot, config.StaticDir)
 
 	// Middleware(web.StaticMiddleware(StaticRoot, web.StaticOption{Prefix: "/assets/"})).
-	router := web.New(ctx). // Create your router
-				Middleware((*Context).RequestLogger).
-				Middleware(web.ShowErrorsMiddleware). //
-				OptionsHandler((*Context).OptionsHandler).
-				Get("/", (&ctx).RootHandler).
-				Get("/:*", (&ctx).GetHandler). // Add a route
-				Post("/:*", (&ctx).PostHandler).
-				Put("/:*", (&ctx).PutHandler).
-				Delete("/:*", (&ctx).DeleteHandler).
-				Patch("/:*", (&ctx).PatchHandler).
-				NotFound((*Context).NotFound)
+	router := web.New(*ctx). // Create your router
+					Middleware((ctx).RequestLogger).
+					Middleware((ctx).CORSMiddleware).
+					OptionsHandler((ctx).OptionsHandler).
+					Get("/:*", (ctx).GetHandler). // Add a route
+					Post("/:*", (ctx).PostHandler).
+					Put("/:*", (ctx).PutHandler).
+					Delete("/:*", (ctx).DeleteHandler).
+					Patch("/:*", (ctx).PatchHandler).
+					Get("/", (ctx).RootHandler)
+
+	if config.Debug {
+		router.Middleware(web.ShowErrorsMiddleware)
+	}
+
 	return router
 }
 

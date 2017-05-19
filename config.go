@@ -3,7 +3,6 @@ package helix
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 )
@@ -11,23 +10,25 @@ import (
 type Config struct {
 	Conf      string
 	Port      string
+	Logging   bool
 	Debug     bool
-	Logfile   string
 	Root      string
 	StaticDir string
 	Hostname  string
 	Cert      string
 	Key       string
+	HSTS      bool
 }
 
 func NewConfig() *Config {
 	return &Config{
 		Port:    "8443",
 		Root:    GetCurrentRoot(),
+		Logging: false,
 		Debug:   false,
-		Logfile: "",
 		Cert:    "test_cert.pem",
 		Key:     "test_key.pem",
+		HSTS:    false,
 	}
 }
 
@@ -41,11 +42,7 @@ func (c *Config) LoadJSONFile(filename string) error {
 }
 
 func GetCurrentRoot() string {
-	root, err := os.Getwd()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
+	root, _ := os.Getwd()
 	if !strings.HasSuffix(root, "/") {
 		root += "/"
 	}

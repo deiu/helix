@@ -14,6 +14,7 @@ func Test_ETag_Match(t *testing.T) {
 	etag := "12345"
 
 	assert.False(t, ETagMatch(badHeader, etag))
+	assert.True(t, ETagMatch("", ""))
 	assert.True(t, ETagMatch(empty, etag))
 	assert.True(t, ETagMatch(goodHeader, etag))
 	assert.True(t, ETagMatch(star, etag))
@@ -27,6 +28,7 @@ func Test_ETag_NoneMatch(t *testing.T) {
 	etag := "12345"
 
 	assert.True(t, ETagNoneMatch(badHeader, etag))
+	assert.True(t, ETagNoneMatch("", ""))
 	assert.True(t, ETagNoneMatch(empty, etag))
 	assert.False(t, ETagNoneMatch(goodHeader, etag))
 	assert.False(t, ETagNoneMatch(star, etag))

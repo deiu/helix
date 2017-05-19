@@ -20,7 +20,6 @@ func Test_Conf_LoadJSONFile(t *testing.T) {
 	file := "test_conf.json"
 	conf := NewConfig()
 	// fail to load inexisting file
-	conf = NewConfig()
 	err := conf.LoadJSONFile(file)
 	assert.Error(t, err)
 	// change some config value
@@ -38,9 +37,4 @@ func Test_Conf_LoadJSONFile(t *testing.T) {
 	// Cleanup
 	err = os.Remove(file)
 	assert.NoError(t, err)
-}
-
-func Test_Conf_GetCurrentRoot(t *testing.T) {
-	root := GetCurrentRoot()
-	assert.NotEmpty(t, root)
 }
