@@ -26,9 +26,10 @@ func (c *Context) GetHandler(w web.ResponseWriter, req *web.Request) {
 }
 
 func (c *Context) getRDF(w web.ResponseWriter, req *web.Request, mime string) {
-	graph := c.getGraph(req.RequestURI)
-	if graph == nil {
+	graph, err := c.getGraph(req.RequestURI)
+	if err != nil {
 		w.WriteHeader(404)
+		w.Write([]byte(err.Error()))
 		return
 	}
 	graph.Serialize(w, mime)

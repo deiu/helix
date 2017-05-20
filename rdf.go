@@ -1,6 +1,7 @@
 package helix
 
 import (
+	"errors"
 	rdf "github.com/deiu/rdf2go"
 )
 
@@ -38,10 +39,17 @@ func (c *Context) addGraph(URI string, graph *rdf.Graph) {
 	c.Store[URI] = graph
 }
 
-func (c *Context) getGraph(URI string) *rdf.Graph {
-	return c.Store[URI]
+func (c *Context) getGraph(URI string) (*rdf.Graph, error) {
+	if c.Store[URI] == nil {
+		return nil, errors.New("Cannot find graph that matches URI: " + URI)
+	}
+	return c.Store[URI], nil
 }
 
-func (c *Context) delGraph(URI string) {
+func (c *Context) delGraph(URI string) error {
+	if c.Store[URI] == nil {
+		return errors.New("Cannot delete graph that matches URI: " + URI)
+	}
 	delete(c.Store, URI)
+	return nil
 }

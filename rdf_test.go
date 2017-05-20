@@ -26,11 +26,17 @@ func Test_RDF_CanSerialize(t *testing.T) {
 }
 
 func Test_RDF_AddRemoveGraph(t *testing.T) {
+	var err error
 	c := NewContext()
 	URI := "https://example.org"
 	graph := rdf.NewGraph(URI)
 	c.addGraph(URI, graph)
-	assert.Equal(t, URI, c.getGraph(URI).URI())
-	c.delGraph(URI)
-	assert.Nil(t, c.getGraph(URI))
+	graph, err = c.getGraph(URI)
+	assert.NoError(t, err)
+	assert.Equal(t, URI, graph.URI())
+	err = c.delGraph(URI)
+	assert.NoError(t, err)
+	graph, err = c.getGraph(URI)
+	assert.Error(t, err)
+	assert.Nil(t, graph)
 }

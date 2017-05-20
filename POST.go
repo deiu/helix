@@ -21,5 +21,12 @@ func (c *Context) postRDF(w web.ResponseWriter, req *web.Request) {
 		w.Write([]byte("Empty request body"))
 		return
 	}
+	_, err := c.getGraph(req.RequestURI)
+	if err == nil {
+		w.WriteHeader(409)
+		w.Write([]byte("Cannot create new graph if it aready exists"))
+		return
+	}
 	c.addGraph(req.RequestURI, graph)
+	w.WriteHeader(201)
 }
