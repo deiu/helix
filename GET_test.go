@@ -39,6 +39,7 @@ func Test_GET_NotAcceptable(t *testing.T) {
 	res, err := testClient.Do(req)
 	assert.NoError(t, err)
 	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(t, err)
 	res.Body.Close()
 	assert.Equal(t, 406, res.StatusCode)
 	assert.NotEmpty(t, body)

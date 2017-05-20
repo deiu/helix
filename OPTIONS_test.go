@@ -13,5 +13,4 @@ func Test_OPTIONS(t *testing.T) {
 	res, err := testClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, res.StatusCode)
-
 }

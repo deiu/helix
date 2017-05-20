@@ -9,7 +9,7 @@ func (c *Context) GetHandler(w web.ResponseWriter, req *web.Request) {
 	ctype := ""
 	acceptList, _ := conneg(req.Request)
 	if len(acceptList) > 0 && acceptList[0].SubType != "*" {
-		ctype, err = acceptList.Negotiate(serializerMimes...)
+		ctype, err = acceptList.Negotiate(rdfMimes...)
 		if err != nil {
 			w.WriteHeader(406)
 			w.Write([]byte("HTTP 406 - Accept type not acceptable: " + err.Error()))
@@ -26,11 +26,14 @@ func (c *Context) GetHandler(w web.ResponseWriter, req *web.Request) {
 }
 
 func (c *Context) getRDF(w web.ResponseWriter, req *web.Request, mime string) {
-	graph, err := c.getGraph(req.RequestURI)
+	URI := absoluteURI(req.Request)
+	graph, err := c.getGraph(URI)
 	if err != nil {
 		w.WriteHeader(404)
 		w.Write([]byte(err.Error()))
 		return
 	}
+	// TODO replace with something better for ETag generation
+	w.Header().Add("ETag", makeETag([]byte(graph.String())))
 	graph.Serialize(w, mime)
 }

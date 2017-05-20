@@ -37,7 +37,7 @@ func Test_Negotiate_RDF(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	contentType, err := al.Negotiate(serializerMimes...)
+	contentType, err := al.Negotiate(rdfMimes...)
 	assert.NoError(t, err)
 	assert.Equal(t, "text/turtle", contentType)
 }

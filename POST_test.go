@@ -18,6 +18,7 @@ func Test_POST_OtherMime(t *testing.T) {
 	res, err := testClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, 400, res.StatusCode)
+	assert.Equal(t, strings.Join(rdfMimes, ", "), res.Header.Get("Accept-Post"))
 }
 
 func Test_POST_TurtleEmpty(t *testing.T) {

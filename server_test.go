@@ -44,3 +44,23 @@ func Test_HTTP2(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.True(t, res.ProtoAtLeast(2, 0))
 }
+
+func Test_RDF_MakeETag(t *testing.T) {
+	data := []byte("test")
+	assert.Equal(t, "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3", makeETag(data))
+}
+
+func Test_absoluteURI(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://example.com", nil)
+	assert.NoError(t, err)
+	req.Header.Add("X-Forward-Host", "example.org")
+	assert.Equal(t, "http://example.org", absoluteURI(req))
+
+	req, err = http.NewRequest("GET", "/foo", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost/foo", absoluteURI(req))
+
+	req, err = http.NewRequest("GET", "http://localhost:80", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "http://localhost", absoluteURI(req))
+}

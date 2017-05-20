@@ -25,6 +25,8 @@ func (c *Context) CORSMiddleware(w web.ResponseWriter, r *web.Request, next web.
 		w.Header().Set("Access-Control-Allow-Methods", strings.Join(methodsAll, ", "))
 	}
 
+	w.Header().Set("Accept-Post", strings.Join(rdfMimes, ", "))
+
 	if c.Config.HSTS {
 		w.Header().Set("Strict-Transport-Security", "max-age=63072000")
 	}

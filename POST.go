@@ -14,19 +14,20 @@ func (c *Context) PostHandler(w web.ResponseWriter, req *web.Request) {
 }
 
 func (c *Context) postRDF(w web.ResponseWriter, req *web.Request) {
-	graph := rdf.NewGraph(req.RequestURI)
+	URI := absoluteURI(req.Request)
+	graph := rdf.NewGraph(URI)
 	graph.Parse(req.Body, req.Header.Get("Content-Type"))
 	if graph.Len() == 0 {
 		w.WriteHeader(400)
 		w.Write([]byte("Empty request body"))
 		return
 	}
-	_, err := c.getGraph(req.RequestURI)
+	_, err := c.getGraph(URI)
 	if err == nil {
 		w.WriteHeader(409)
 		w.Write([]byte("Cannot create new graph if it aready exists"))
 		return
 	}
-	c.addGraph(req.RequestURI, graph)
+	c.addGraph(URI, graph)
 	w.WriteHeader(201)
 }

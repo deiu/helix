@@ -16,7 +16,7 @@ var mimeSerializer = map[string]string{
 	"application/ld+json": "jsonld",
 }
 
-var serializerMimes = []string{
+var rdfMimes = []string{
 	"text/turtle",
 	"application/ld+json",
 }
