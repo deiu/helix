@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_NewTLSConfigNoCertKey(t *testing.T) {
+func Test_NewTLSConfig_NoCertKey(t *testing.T) {
 	_, err := NewTLSConfig("", "test_key.pem")
 	assert.Error(t, err)
 
@@ -16,7 +16,7 @@ func Test_NewTLSConfigNoCertKey(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func Test_GET_HTTP1_1(t *testing.T) {
+func Test_HTTP11(t *testing.T) {
 	// Create a temporary http/1.1 client
 	httpClient := &http.Client{
 		Transport: &http.Transport{
@@ -35,7 +35,7 @@ func Test_GET_HTTP1_1(t *testing.T) {
 	assert.True(t, res.ProtoAtLeast(1, 1))
 }
 
-func Test_GET_HTTP2(t *testing.T) {
+func Test_HTTP2(t *testing.T) {
 	req, err := http.NewRequest("GET", testServer.URL, nil)
 	assert.NoError(t, err)
 
