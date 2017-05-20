@@ -45,11 +45,6 @@ func Test_HTTP2(t *testing.T) {
 	assert.True(t, res.ProtoAtLeast(2, 0))
 }
 
-func Test_RDF_MakeETag(t *testing.T) {
-	data := []byte("test")
-	assert.Equal(t, "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3", makeETag(data))
-}
-
 func Test_absoluteURI(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://example.com", nil)
 	assert.NoError(t, err)

@@ -1,10 +1,8 @@
 package helix
 
 import (
-	"crypto/sha1"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -92,12 +90,6 @@ func NewTLSConfig(cert, key string) (*tls.Config, error) {
 	cfg.Certificates[0], err = tls.LoadX509KeyPair(cert, key)
 
 	return cfg, err
-}
-
-func makeETag(data []byte) string {
-	h := sha1.New()
-	h.Write(data)
-	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 func absoluteURI(req *http.Request) string {

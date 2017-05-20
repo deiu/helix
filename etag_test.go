@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_RDF_NewETag(t *testing.T) {
+	data := []byte("test")
+	assert.Equal(t, "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3", newETag(data))
+}
+
 func Test_ETag_Match(t *testing.T) {
 	goodHeader := "12345"
 	badHeader := "123"

@@ -1,8 +1,16 @@
 package helix
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"strings"
 )
+
+func newETag(data []byte) string {
+	h := sha1.New()
+	h.Write(data)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
 
 func ETagMatch(header string, etag string) bool {
 	if len(etag) == 0 {
