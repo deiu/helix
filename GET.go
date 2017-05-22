@@ -22,7 +22,7 @@ func (c *Context) GetHandler(w web.ResponseWriter, req *web.Request) {
 		c.getRDF(w, req, ctype)
 		return
 	}
-	// w.WriteHeader(400)
+	w.WriteHeader(404)
 }
 
 func (c *Context) getRDF(w web.ResponseWriter, req *web.Request, mime string) {
