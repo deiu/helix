@@ -18,17 +18,25 @@ type Config struct {
 	Cert      string
 	Key       string
 	HSTS      bool
+	FilePath  string
+	DataPath  string
+	ACLPath   string
+	MetaPath  string
 }
 
 func NewConfig() *Config {
 	return &Config{
-		Port:    "8443",
-		Root:    GetCurrentRoot(),
-		Logging: false,
-		Debug:   false,
-		Cert:    "test_cert.pem",
-		Key:     "test_key.pem",
-		HSTS:    false,
+		Port:     "8443",
+		Root:     GetCurrentRoot(),
+		Logging:  false,
+		Debug:    false,
+		Cert:     "test_cert.pem",
+		Key:      "test_key.pem",
+		HSTS:     false,
+		FilePath: "/files/",
+		DataPath: "/data/",
+		ACLPath:  "/acl/",
+		MetaPath: "/meta/",
 	}
 }
 

@@ -10,25 +10,27 @@ import (
 )
 
 var (
+	testConfig *Config
 	testServer *httptest.Server
 	testClient *http.Client
 )
 
 func init() {
 	// uncomment for extra logging
-	conf := NewConfig()
-	conf.Debug = true
-	conf.HSTS = true
+	testConfig := NewConfig()
+	testConfig.Debug = true
+	testConfig.HSTS = true
+	testConfig.StaticDir = "./static"
 
 	// prepare TLS config
-	tlsCfg, err := NewTLSConfig(conf.Cert, conf.Key)
+	tlsCfg, err := NewTLSConfig(testConfig.Cert, testConfig.Key)
 	if err != nil {
 		println(err.Error())
 		return
 	}
 
 	// testServer
-	e := NewServer(conf)
+	e := NewServer(testConfig)
 	testServer = httptest.NewUnstartedServer(e)
 	testServer.TLS = tlsCfg
 	testServer.StartTLS()
