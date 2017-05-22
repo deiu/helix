@@ -46,10 +46,11 @@ func NewServer(config *Config) *web.Router {
 	currentRoot, _ := os.Getwd()
 	config.StaticDir = path.Join(currentRoot, config.StaticDir)
 
-	// Middleware(web.StaticMiddleware(StaticRoot, web.StaticOption{Prefix: "/assets/"})).
+	//
 	router := web.New(*ctx). // Create your router
 					Middleware((ctx).RequestLogger).
 					Middleware((ctx).CORSMiddleware).
+					Middleware(web.StaticMiddleware(config.StaticDir, web.StaticOption{Prefix: "/assets/"})).
 					OptionsHandler((ctx).OptionsHandler).
 					Get("/:*", (ctx).GetHandler). // Add a route
 					Post("/:*", (ctx).PostHandler).
