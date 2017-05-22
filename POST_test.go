@@ -48,6 +48,8 @@ func Test_POST_Turtle(t *testing.T) {
 	res, err := testClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, 201, res.StatusCode)
+	etag := res.Header.Get("Etag")
+	assert.NotEmpty(t, etag)
 
 	req, err = http.NewRequest("POST", URI, strings.NewReader(buf.String()))
 	assert.NoError(t, err)
@@ -62,4 +64,5 @@ func Test_POST_Turtle(t *testing.T) {
 	res, err = testClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, res.StatusCode)
+	assert.Equal(t, etag, res.Header.Get("Etag"))
 }

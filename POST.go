@@ -29,5 +29,9 @@ func (c *Context) postRDF(w web.ResponseWriter, req *web.Request) {
 		return
 	}
 	c.addGraph(URI, graph)
+
+	// add ETag
+	w.Header().Add("ETag", newETag([]byte(graph.String())))
+
 	w.WriteHeader(201)
 }
