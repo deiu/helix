@@ -1,13 +1,58 @@
 package helix
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
+	rdf "github.com/deiu/rdf2go"
 	"github.com/stretchr/testify/assert"
 )
+
+func Test_GET_RDF(t *testing.T) {
+	mime := "text/turtle"
+	URI := testServer.URL + "/rdf"
+	graph := rdf.NewGraph(URI)
+	graph.AddTriple(rdf.NewResource(URI), rdf.NewResource("pred"), rdf.NewLiteral("obj"))
+
+	buf := new(bytes.Buffer)
+	graph.Serialize(buf, mime)
+
+	req, err := http.NewRequest("POST", URI, strings.NewReader(buf.String()))
+	assert.NoError(t, err)
+	req.Header.Add("Content-Type", mime)
+	res, err := testClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 201, res.StatusCode)
+
+	req, err = http.NewRequest("GET", URI, nil)
+	assert.NoError(t, err)
+	req.Header.Add("Accept", mime)
+	res, err = testClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, res.StatusCode)
+}
+
+func Test_GET_Static(t *testing.T) {
+	req, err := http.NewRequest("GET", testServer.URL+"/assets/index.html", nil)
+	assert.NoError(t, err)
+	res, err := testClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, res.StatusCode)
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(t, err)
+	res.Body.Close()
+	assert.Equal(t, "Hello static!", string(body))
+
+	req, err = http.NewRequest("GET", testServer.URL+"/assets/foo.html", nil)
+	assert.NoError(t, err)
+	res, err = testClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 404, res.StatusCode)
+}
 
 func Test_GET_NonRDF(t *testing.T) {
 	req, err := http.NewRequest("GET", testServer.URL, nil)
@@ -20,7 +65,7 @@ func Test_GET_NonRDF(t *testing.T) {
 	assert.NoError(t, err)
 	res, err = testClient.Do(req)
 	assert.NoError(t, err)
-	assert.Equal(t, 200, res.StatusCode)
+	assert.Equal(t, 404, res.StatusCode)
 }
 
 func Test_GET_RDFNotFound(t *testing.T) {
@@ -46,13 +91,43 @@ func Test_GET_NotAcceptable(t *testing.T) {
 }
 
 func BenchmarkGET(b *testing.B) {
+	mime := "text/turtle"
+	URI := testServer.URL + "/benchttl"
+	graph := rdf.NewGraph(URI)
+	graph.AddTriple(rdf.NewResource(URI), rdf.NewResource("pred"), rdf.NewLiteral("obj"))
+
+	buf := new(bytes.Buffer)
+	graph.Serialize(buf, mime)
+
+	req, err := http.NewRequest("POST", URI, strings.NewReader(buf.String()))
+	if err != nil {
+		b.Fail()
+	}
+	req.Header.Add("Content-Type", mime)
+	_, err = testClient.Do(req)
+	if err != nil {
+		b.Fail()
+	}
+
+	// Run the bench
 	e := 0
 	for i := 0; i < b.N; i++ {
-		req, _ := http.NewRequest("GET", testServer.URL, nil)
+		req, _ := http.NewRequest("GET", URI, nil)
 		if res, _ := testClient.Do(req); res.StatusCode != 200 {
 			e++
 		}
 	}
+
+	// delete resource
+	req, err = http.NewRequest("DELETE", URI, nil)
+	if err != nil {
+		b.Fail()
+	}
+	_, err = testClient.Do(req)
+	if err != nil {
+		b.Fail()
+	}
+
 	if e > 0 {
 		b.Log(fmt.Sprintf("%d/%d failed", e, b.N))
 		b.Fail()
