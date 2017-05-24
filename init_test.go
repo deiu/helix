@@ -20,6 +20,7 @@ func init() {
 	testConfig := NewConfig()
 	testConfig.Debug = true
 	testConfig.HSTS = true
+	testConfig.RedisURL = "localhost:1234"
 	testConfig.StaticDir = "./static"
 
 	// prepare TLS config

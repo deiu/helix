@@ -8,35 +8,38 @@ import (
 )
 
 type Config struct {
-	Conf      string
-	Port      string
-	Logging   bool
-	Debug     bool
-	Root      string
-	StaticDir string
-	Hostname  string
-	Cert      string
-	Key       string
-	HSTS      bool
-	FilePath  string
-	DataPath  string
-	ACLPath   string
-	MetaPath  string
+	Conf       string
+	Port       string
+	Logging    bool
+	Debug      bool
+	SkipVerify bool
+	Root       string
+	StaticDir  string
+	Hostname   string
+	Cert       string
+	Key        string
+	HSTS       bool
+	RedisURL   string
+	FilePath   string
+	DataPath   string
+	ACLPath    string
+	MetaPath   string
 }
 
 func NewConfig() *Config {
 	return &Config{
-		Port:     "8443",
-		Root:     GetCurrentRoot(),
-		Logging:  false,
-		Debug:    false,
-		Cert:     "test_cert.pem",
-		Key:      "test_key.pem",
-		HSTS:     false,
-		FilePath: "/files/",
-		DataPath: "/data/",
-		ACLPath:  "/acl/",
-		MetaPath: "/meta/",
+		Port:       "8443",
+		Root:       GetCurrentRoot(),
+		Logging:    false,
+		Debug:      false,
+		SkipVerify: false,
+		Cert:       "test_cert.pem",
+		Key:        "test_key.pem",
+		HSTS:       false,
+		FilePath:   "/files/",
+		DataPath:   "/data/",
+		ACLPath:    "/acl/",
+		MetaPath:   "/meta/",
 	}
 }
 

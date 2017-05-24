@@ -43,21 +43,30 @@ func NewServer(config *Config) *web.Router {
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
 
+	// if len(config.RedisURL) > 0 {
+	// 	GraphStore, _ = initRedisPool(config.RedisURL, pool)
+	// 	defer func() {
+	// 		if err := pool.Close(); err != nil {
+	// 			// handle error
+	// 		}
+	// 	}()
+	// }
+
 	currentRoot, _ := os.Getwd()
 	config.StaticDir = path.Join(currentRoot, config.StaticDir)
 
-	//
-	router := web.New(*ctx). // Create your router
-					Middleware((ctx).RequestLogger).
-					Middleware((ctx).CORSMiddleware).
-					Middleware(web.StaticMiddleware(config.StaticDir, web.StaticOption{Prefix: "/assets/"})).
-					OptionsHandler((ctx).OptionsHandler).
-					Get("/:*", (ctx).GetHandler). // Add a route
-					Post("/:*", (ctx).PostHandler).
-					Put("/:*", (ctx).PutHandler).
-					Delete("/:*", (ctx).DeleteHandler).
-					Patch("/:*", (ctx).PatchHandler).
-					Get("/", (ctx).RootHandler)
+	// Create router
+	router := web.New(*ctx).
+		Middleware((ctx).RequestLogger).
+		Middleware((ctx).CORSMiddleware).
+		Middleware(web.StaticMiddleware(config.StaticDir, web.StaticOption{Prefix: "/assets/"})).
+		OptionsHandler((ctx).OptionsHandler).
+		Get("/:*", (ctx).GetHandler). // Match anything
+		Post("/:*", (ctx).PostHandler).
+		Put("/:*", (ctx).PutHandler).
+		Delete("/:*", (ctx).DeleteHandler).
+		Patch("/:*", (ctx).PatchHandler).
+		Get("/", (ctx).RootHandler) // reserved for a welcome/dashboard page
 
 	if config.Debug {
 		router.Middleware(web.ShowErrorsMiddleware)

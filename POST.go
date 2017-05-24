@@ -6,7 +6,9 @@ import (
 )
 
 func (c *Context) PostHandler(w web.ResponseWriter, req *web.Request) {
-	if canParse(req.Header.Get("Content-Type")) {
+	ctype := req.Header.Get("Content-Type")
+	logger.Info().Str("Content-Type", ctype).Msg("")
+	if canParse(ctype) {
 		c.postRDF(w, req)
 		return
 	}
@@ -15,7 +17,7 @@ func (c *Context) PostHandler(w web.ResponseWriter, req *web.Request) {
 
 func (c *Context) postRDF(w web.ResponseWriter, req *web.Request) {
 	URI := absoluteURI(req.Request)
-	graph := rdf.NewGraph(URI)
+	graph := rdf.NewGraph(URI, true)
 	graph.Parse(req.Body, req.Header.Get("Content-Type"))
 	if graph.Len() == 0 {
 		w.WriteHeader(400)
