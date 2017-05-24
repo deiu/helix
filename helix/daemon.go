@@ -17,6 +17,7 @@ var (
 	cert   = os.Getenv("HELIX_CERT")
 	key    = os.Getenv("HELIX_KEY")
 	hsts   = os.Getenv("HELIX_HSTS")
+	bolt   = os.Getenv("HELIX_BOLT_PATH")
 )
 
 func main() {
@@ -28,6 +29,7 @@ func main() {
 	config.StaticDir = static
 	config.Cert = cert
 	config.Key = key
+	config.BoltPath = bolt
 	if len(debug) > 0 {
 		config.Debug = true
 	}
@@ -41,7 +43,11 @@ func main() {
 	println("Listening on " + config.Hostname + ":" + config.Port)
 
 	// prepare new handler
-	handler := helix.NewServer(config)
+	handler, err := helix.NewServer(config)
+	if err != nil {
+		println(err.Error())
+		return
+	}
 	// prepare server
 	s := &http.Server{
 		Addr:    ":" + config.Port,

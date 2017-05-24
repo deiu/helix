@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/boltdb/bolt"
 	rdf "github.com/deiu/rdf2go"
 	"github.com/gocraft/web"
 	"github.com/rs/zerolog"
@@ -25,6 +26,7 @@ type (
 	Context struct {
 		Config *Config
 		Store  map[string]*rdf.Graph
+		BoltDB *bolt.DB
 	}
 )
 
@@ -32,10 +34,11 @@ func NewContext() *Context {
 	return &Context{
 		Config: NewConfig(),
 		Store:  make(map[string]*rdf.Graph),
+		BoltDB: &bolt.DB{},
 	}
 }
 
-func NewServer(config *Config) *web.Router {
+func NewServer(config *Config) (*web.Router, error) {
 	ctx := NewContext()
 	ctx.Config = config
 
@@ -43,14 +46,14 @@ func NewServer(config *Config) *web.Router {
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
 
-	// if len(config.RedisURL) > 0 {
-	// 	GraphStore, _ = initRedisPool(config.RedisURL, pool)
-	// 	defer func() {
-	// 		if err := pool.Close(); err != nil {
-	// 			// handle error
-	// 		}
-	// 	}()
-	// }
+	if len(config.BoltPath) > 0 {
+		// Start Bolt
+		err := ctx.StartBolt()
+		if err != nil {
+			return &web.Router{}, err
+		}
+		defer ctx.BoltDB.Close()
+	}
 
 	currentRoot, _ := os.Getwd()
 	config.StaticDir = path.Join(currentRoot, config.StaticDir)
@@ -72,7 +75,7 @@ func NewServer(config *Config) *web.Router {
 		router.Middleware(web.ShowErrorsMiddleware)
 	}
 
-	return router
+	return router, nil
 }
 
 func NewTLSConfig(cert, key string) (*tls.Config, error) {
@@ -125,4 +128,13 @@ func absoluteURI(req *http.Request) string {
 		port = ""
 	}
 	return scheme + "://" + host + port + req.URL.Path
+}
+
+func (c *Context) StartBolt() error {
+	var err error
+	c.BoltDB, err = bolt.Open(c.Config.BoltPath, 0644, nil)
+	if err != nil {
+		return err
+	}
+	return nil
 }

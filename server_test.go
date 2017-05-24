@@ -3,6 +3,7 @@ package helix
 import (
 	"crypto/tls"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +46,7 @@ func Test_HTTP2(t *testing.T) {
 	assert.True(t, res.ProtoAtLeast(2, 0))
 }
 
-func Test_absoluteURI(t *testing.T) {
+func Test_AbsoluteURI(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://example.com", nil)
 	assert.NoError(t, err)
 	req.Header.Add("X-Forward-Host", "example.org")
@@ -58,4 +59,27 @@ func Test_absoluteURI(t *testing.T) {
 	req, err = http.NewRequest("GET", "http://localhost:80", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "http://localhost", absoluteURI(req))
+}
+
+func Test_StartBolt(t *testing.T) {
+	ctx := NewContext()
+	ctx.Config = NewConfig()
+	ctx.Config.BoltPath = os.TempDir()
+
+	err := ctx.StartBolt()
+	assert.Error(t, err)
+
+	ctx.Config = NewConfig()
+	err = ctx.StartBolt()
+	assert.NoError(t, err)
+
+	err = os.Remove(ctx.Config.BoltPath)
+	assert.NoError(t, err)
+}
+
+func Test_NewServerWithError(t *testing.T) {
+	config := NewConfig()
+	config.BoltPath = os.TempDir()
+	_, err := NewServer(config)
+	assert.Error(t, err)
 }

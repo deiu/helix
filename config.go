@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -19,7 +20,7 @@ type Config struct {
 	Cert       string
 	Key        string
 	HSTS       bool
-	RedisURL   string
+	BoltPath   string
 	FilePath   string
 	DataPath   string
 	ACLPath    string
@@ -36,6 +37,7 @@ func NewConfig() *Config {
 		Cert:       "test_cert.pem",
 		Key:        "test_key.pem",
 		HSTS:       false,
+		BoltPath:   filepath.Join(os.TempDir(), "bolt.db"),
 		FilePath:   "/files/",
 		DataPath:   "/data/",
 		ACLPath:    "/acl/",

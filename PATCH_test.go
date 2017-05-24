@@ -13,5 +13,4 @@ func Test_PATCH(t *testing.T) {
 	resp, err := testClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, resp.StatusCode)
-
 }
