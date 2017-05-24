@@ -4,4 +4,4 @@
 [![Coverage Status](https://coveralls.io/repos/github/deiu/helix/badge.svg?branch=master)](https://coveralls.io/github/deiu/helix?branch=master)
 
 
-Go Link Data server. This is a parallel implementation of the [Solid](https://github.com/solid/solid) stack.
+Go Link Data server. This is a parallel implementation of the [Solid](https://github.com/solid/solid) stack, which aims to simplify things a lot.
