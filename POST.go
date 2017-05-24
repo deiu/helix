@@ -17,7 +17,7 @@ func (c *Context) PostHandler(w web.ResponseWriter, req *web.Request) {
 
 func (c *Context) postRDF(w web.ResponseWriter, req *web.Request) {
 	URI := absoluteURI(req.Request)
-	graph := rdf.NewGraph(URI, true)
+	graph := rdf.NewGraph(URI)
 	graph.Parse(req.Body, req.Header.Get("Content-Type"))
 	if graph.Len() == 0 {
 		w.WriteHeader(400)
