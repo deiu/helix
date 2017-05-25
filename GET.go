@@ -18,6 +18,8 @@ func (c *Context) GetHandler(w web.ResponseWriter, req *web.Request) {
 		logger.Info().Str("Accept", ctype).Msg("")
 	}
 
+	w.Header().Set("Content-Type", ctype)
+
 	if canSerialize(ctype) {
 		c.getRDF(w, req, ctype)
 		return
@@ -34,6 +36,10 @@ func (c *Context) getRDF(w web.ResponseWriter, req *web.Request, mime string) {
 		return
 	}
 	w.Header().Add("ETag", graph.Etag)
-	w.Header().Set("Content-Type", mime)
+
+	if req.Method == "HEAD" {
+		return
+	}
+
 	graph.Graph.Serialize(w, mime)
 }

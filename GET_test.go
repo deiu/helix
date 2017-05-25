@@ -96,6 +96,26 @@ func Test_GET_NotAcceptable(t *testing.T) {
 	assert.NotEmpty(t, body)
 }
 
+func Test_HEAD(t *testing.T) {
+	req, err := http.NewRequest("HEAD", testServer.URL+"/baz", nil)
+	assert.NoError(t, err)
+	req.Header.Add("Accept", "text/turtle")
+	res, err := testClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 404, res.StatusCode)
+
+	req, err = http.NewRequest("HEAD", testServer.URL+"/foo.ttl", nil)
+	assert.NoError(t, err)
+	req.Header.Add("Accept", "text/turtle")
+	res, err = testClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, 200, res.StatusCode)
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(t, err)
+	res.Body.Close()
+	assert.Equal(t, 0, len(body))
+}
+
 func BenchmarkGET(b *testing.B) {
 	mime := "text/turtle"
 	URI := testServer.URL + "/benchttl"

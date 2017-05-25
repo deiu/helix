@@ -28,11 +28,6 @@ type (
 		Store  map[string]*Graph
 		BoltDB *bolt.DB
 	}
-
-	APIContext struct {
-		*Context
-		AccessToken string
-	}
 )
 
 func NewContext() *Context {
