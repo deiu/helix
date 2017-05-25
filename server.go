@@ -67,7 +67,7 @@ func NewServer(config *Config) (*web.Router, error) {
 	router := web.New(*ctx).
 		Middleware((ctx).RequestLogger).
 		Middleware((ctx).CORSMiddleware).
-		Middleware(web.StaticMiddleware(config.StaticDir, web.StaticOption{Prefix: "/assets/"})).
+		Middleware(web.StaticMiddleware(config.StaticDir, web.StaticOption{Prefix: config.StaticPath})).
 		OptionsHandler((ctx).OptionsHandler).
 		Get("/:*", (ctx).GetHandler). // Match anything
 		Post("/:*", (ctx).PostHandler).

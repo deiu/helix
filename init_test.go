@@ -17,10 +17,10 @@ var (
 
 func init() {
 	// uncomment for extra logging
-	testConfig := NewConfig()
+	testConfig = NewConfig()
 	testConfig.Debug = true
 	testConfig.HSTS = true
-	testConfig.StaticDir = "./static"
+	testConfig.StaticDir = "./test"
 
 	// prepare TLS config
 	tlsCfg, err := NewTLSConfig(testConfig.Cert, testConfig.Key)

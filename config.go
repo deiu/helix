@@ -16,6 +16,7 @@ type Config struct {
 	SkipVerify bool
 	Root       string
 	StaticDir  string
+	StaticPath string
 	Hostname   string
 	Cert       string
 	Key        string
@@ -38,6 +39,7 @@ func NewConfig() *Config {
 		Key:        "test_key.pem",
 		HSTS:       false,
 		BoltPath:   filepath.Join(os.TempDir(), "bolt.db"),
+		StaticPath: "/static/",
 		FilePath:   "/files/",
 		DataPath:   "/data/",
 		ACLPath:    "/acl/",
