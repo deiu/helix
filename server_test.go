@@ -72,6 +72,7 @@ func Test_StartBolt(t *testing.T) {
 	ctx.Config = NewConfig()
 	err = ctx.StartBolt()
 	assert.NoError(t, err)
+	defer ctx.BoltDB.Close()
 
 	err = os.Remove(ctx.Config.BoltPath)
 	assert.NoError(t, err)

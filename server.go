@@ -14,9 +14,10 @@ import (
 	"github.com/rs/zerolog"
 )
 
+const HelixVersion = "0.1"
+
 var (
-	HELIX_VERSION = "0.1"
-	methodsAll    = []string{
+	methodsAll = []string{
 		"OPTIONS", "HEAD", "GET", "POST", "PUT", "PATCH", "DELETE",
 	}
 	logger = zerolog.New(os.Stderr).With().Timestamp().Logger()

@@ -28,7 +28,7 @@ func Test_Pass_Register(t *testing.T) {
 	err = ctx.registerPass(testUser, testPass)
 	assert.NoError(t, err)
 
-	boltCleanup(ctx.Config.BoltPath)
+	boltCleanup(ctx)
 }
 
 func Test_Pass_Verify(t *testing.T) {
@@ -57,7 +57,7 @@ func Test_Pass_Verify(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, ok)
 
-	boltCleanup(ctx.Config.BoltPath)
+	boltCleanup(ctx)
 }
 
 func Test_Pass_StoreNoUser(t *testing.T) {
@@ -72,11 +72,14 @@ func Test_Pass_StoreNoUser(t *testing.T) {
 
 	err = ctx.storePass("", testPass)
 	assert.Error(t, err)
+
+	boltCleanup(ctx)
 }
 
-func boltCleanup(path string) {
-	err := os.Remove(path)
+func boltCleanup(ctx *Context) {
+	ctx.BoltDB.Close()
+	err := os.Remove(ctx.Config.BoltPath)
 	if err != nil {
-		panic("Failed to remove " + path)
+		panic("Failed to remove " + ctx.Config.BoltPath)
 	}
 }
