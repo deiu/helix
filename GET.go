@@ -33,7 +33,7 @@ func (c *Context) getRDF(w web.ResponseWriter, req *web.Request, mime string) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	// TODO replace with something better for ETag generation
-	w.Header().Add("ETag", newETag([]byte(graph.String())))
-	graph.Serialize(w, mime)
+	w.Header().Add("ETag", graph.Etag)
+	w.Header().Set("Content-Type", mime)
+	graph.Graph.Serialize(w, mime)
 }

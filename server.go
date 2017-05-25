@@ -9,7 +9,6 @@ import (
 	"path"
 
 	"github.com/boltdb/bolt"
-	rdf "github.com/deiu/rdf2go"
 	"github.com/gocraft/web"
 	"github.com/rs/zerolog"
 )
@@ -26,15 +25,20 @@ var (
 type (
 	Context struct {
 		Config *Config
-		Store  map[string]*rdf.Graph
+		Store  map[string]*Graph
 		BoltDB *bolt.DB
+	}
+
+	APIContext struct {
+		*Context
+		AccessToken string
 	}
 )
 
 func NewContext() *Context {
 	return &Context{
 		Config: NewConfig(),
-		Store:  make(map[string]*rdf.Graph),
+		Store:  make(map[string]*Graph),
 		BoltDB: &bolt.DB{},
 	}
 }

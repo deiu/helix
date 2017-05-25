@@ -17,9 +17,9 @@ func (c *Context) PostHandler(w web.ResponseWriter, req *web.Request) {
 
 func (c *Context) postRDF(w web.ResponseWriter, req *web.Request) {
 	URI := absoluteURI(req.Request)
-	graph := rdf.NewGraph(URI)
-	graph.Parse(req.Body, req.Header.Get("Content-Type"))
-	if graph.Len() == 0 {
+	g := rdf.NewGraph(URI)
+	g.Parse(req.Body, req.Header.Get("Content-Type"))
+	if g.Len() == 0 {
 		w.WriteHeader(400)
 		w.Write([]byte("Empty request body"))
 		return
@@ -30,10 +30,16 @@ func (c *Context) postRDF(w web.ResponseWriter, req *web.Request) {
 		w.Write([]byte("Cannot create new graph if it aready exists"))
 		return
 	}
+
+	// add graph
+	// TODO: move this into a go routine
+	graph := NewGraph()
+	graph.Graph = g
+	graph.Etag = newETag([]byte(g.String()))
 	c.addGraph(URI, graph)
 
 	// add ETag
-	w.Header().Add("ETag", newETag([]byte(graph.String())))
+	w.Header().Add("ETag", graph.Etag)
 
 	w.WriteHeader(201)
 }

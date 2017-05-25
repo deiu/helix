@@ -14,10 +14,9 @@ import (
 
 func Test_GET_RDF(t *testing.T) {
 	mime := "text/turtle"
-	URI := testServer.URL + "/rdf"
+	URI := testServer.URL + "/foo.ttl"
 	graph := rdf.NewGraph(URI)
-	graph.AddTriple(rdf.NewResource(URI), rdf.NewResource("pred"), rdf.NewLiteral("obj"))
-
+	graph.AddTriple(rdf.NewResource(URI), rdf.NewResource("http://test.com/foo"), rdf.NewLiteral("obj"))
 	buf := new(bytes.Buffer)
 	graph.Serialize(buf, mime)
 
@@ -34,6 +33,13 @@ func Test_GET_RDF(t *testing.T) {
 	res, err = testClient.Do(req)
 	assert.NoError(t, err)
 	assert.Equal(t, 200, res.StatusCode)
+	assert.Equal(t, mime, res.Header.Get("Content-Type"))
+
+	graph = rdf.NewGraph(URI)
+	graph.Parse(res.Body, res.Header.Get("Content-Type"))
+	res.Body.Close()
+	assert.Equal(t, 1, graph.Len())
+	assert.NotNil(t, graph.One(rdf.NewResource(URI), rdf.NewResource("http://test.com/foo"), rdf.NewLiteral("obj")))
 }
 
 func Test_GET_Static(t *testing.T) {

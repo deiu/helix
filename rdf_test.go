@@ -29,11 +29,13 @@ func Test_RDF_AddRemoveGraph(t *testing.T) {
 	var err error
 	c := NewContext()
 	URI := "https://example.org"
-	graph := rdf.NewGraph(URI)
+	g := rdf.NewGraph(URI)
+	graph := NewGraph()
+	graph.Graph = g
 	c.addGraph(URI, graph)
 	graph, err = c.getGraph(URI)
 	assert.NoError(t, err)
-	assert.Equal(t, URI, graph.URI())
+	assert.Equal(t, URI, graph.Graph.URI())
 	err = c.delGraph(URI)
 	assert.NoError(t, err)
 	graph, err = c.getGraph(URI)

@@ -21,6 +21,15 @@ var rdfMimes = []string{
 	"application/ld+json",
 }
 
+type Graph struct {
+	*rdf.Graph
+	Etag string
+}
+
+func NewGraph() *Graph {
+	return &Graph{}
+}
+
 func canParse(ctype string) bool {
 	if len(mimeParser[ctype]) > 0 {
 		return true
@@ -35,11 +44,11 @@ func canSerialize(ctype string) bool {
 	return false
 }
 
-func (c *Context) addGraph(URI string, graph *rdf.Graph) {
+func (c *Context) addGraph(URI string, graph *Graph) {
 	c.Store[URI] = graph
 }
 
-func (c *Context) getGraph(URI string) (*rdf.Graph, error) {
+func (c *Context) getGraph(URI string) (*Graph, error) {
 	if c.Store[URI] == nil {
 		return nil, errors.New("Cannot find graph that matches URI: " + URI)
 	}
