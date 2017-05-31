@@ -24,14 +24,17 @@ var (
 
 type (
 	Context struct {
-		Config *Config
-		Store  map[string]*Graph
-		BoltDB *bolt.DB
+		User        string
+		Config      *Config
+		Store       map[string]*Graph
+		BoltDB      *bolt.DB
+		AccessToken string
 	}
 )
 
 func NewContext() *Context {
 	return &Context{
+		User:   "",
 		Config: NewConfig(),
 		Store:  make(map[string]*Graph),
 		BoltDB: &bolt.DB{},
@@ -60,8 +63,10 @@ func NewServer(config *Config) (*web.Router, error) {
 
 	// Create router
 	router := web.New(*ctx).
+		// Middleware(web.LoggerMiddleware). // turn off once done with tweaking
 		Middleware((ctx).RequestLogger).
-		Middleware((ctx).CORSMiddleware).
+		Middleware((ctx).CORS).
+		Middleware((ctx).Authentication).
 		Middleware(web.StaticMiddleware(config.StaticDir, web.StaticOption{Prefix: config.StaticPath})).
 		OptionsHandler((ctx).OptionsHandler).
 		Get("/:*", (ctx).GetHandler). // Match anything
