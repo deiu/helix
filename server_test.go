@@ -77,10 +77,3 @@ func Test_StartBolt(t *testing.T) {
 	err = os.Remove(ctx.Config.BoltPath)
 	assert.NoError(t, err)
 }
-
-func Test_NewServerWithError(t *testing.T) {
-	config := NewConfig()
-	config.BoltPath = os.TempDir()
-	_, err := NewServer(config)
-	assert.Error(t, err)
-}

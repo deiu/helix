@@ -12,7 +12,7 @@ func (c *Context) RequestLogger(w web.ResponseWriter, req *web.Request, next web
 		Timestamp().
 		Str("Method", req.Method).
 		Str("Path", req.Request.URL.String()).
-		Str("User", c.User).
+		Str("User", reqUser(req)).
 		Logger()
 
 	next(w, req)

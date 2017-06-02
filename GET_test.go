@@ -43,7 +43,7 @@ func Test_GET_RDF(t *testing.T) {
 }
 
 func Test_GET_Static(t *testing.T) {
-	req, err := http.NewRequest("GET", testServer.URL+testConfig.StaticPath+"index.html", nil)
+	req, err := http.NewRequest("GET", testServer.URL+testCtx.Config.StaticPath+"index.html", nil)
 	assert.NoError(t, err)
 	res, err := testClient.Do(req)
 	assert.NoError(t, err)
@@ -53,7 +53,7 @@ func Test_GET_Static(t *testing.T) {
 	res.Body.Close()
 	assert.Equal(t, "Hello static!", string(body))
 
-	req, err = http.NewRequest("GET", testServer.URL+testConfig.StaticPath+"foo.html", nil)
+	req, err = http.NewRequest("GET", testServer.URL+testCtx.Config.StaticPath+"foo.html", nil)
 	assert.NoError(t, err)
 	res, err = testClient.Do(req)
 	assert.NoError(t, err)
