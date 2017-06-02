@@ -3,9 +3,10 @@ package helix
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 
 	"github.com/boltdb/bolt"
-	"gopkg.in/hlandau/passlib.v1"
+	"github.com/gocraft/web"
 )
 
 type User struct {
@@ -15,6 +16,64 @@ type User struct {
 
 func NewUser() *User {
 	return &User{}
+}
+
+func (c *Context) GetAccountHandler(w web.ResponseWriter, req *web.Request) {
+	if len(reqUser(req)) == 0 {
+		c.AuthenticationRequired(w, req)
+	}
+}
+
+func (c *Context) LoginHandler(w web.ResponseWriter, req *web.Request) {
+	ok, err := c.verifyPass(req.FormValue("username"), req.FormValue("password"))
+	if err != nil {
+		logger.Info().Msg("Login error: " + err.Error())
+	}
+	if !ok {
+		c.AuthenticationRequired(w, req)
+		return
+	}
+	user := req.FormValue("username")
+
+	w.Header().Set("User", user)
+
+	c.newAuthzToken(w, req.Request, user)
+}
+
+func (c *Context) LogoutHandler(w web.ResponseWriter, req *web.Request) {
+	// delete session/cookie
+	user := reqUser(req)
+	if len(user) == 0 {
+		c.AuthenticationRequired(w, req)
+		return
+	}
+}
+
+func (c *Context) DeleteAccountHandler(w web.ResponseWriter, req *web.Request) {
+	user := reqUser(req)
+	if len(user) == 0 {
+		c.AuthenticationRequired(w, req)
+		return
+	}
+	err := c.deleteUser(user)
+	if err != nil {
+		logger.Info().Msg("Error closing account for " + user + ":" + err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	// also clean sessions, etc by logging user out
+}
+
+func (c *Context) NewAccountHandler(w web.ResponseWriter, req *web.Request) {
+	err := c.addUser(req.FormValue("username"), req.FormValue("password"), req.FormValue("email"))
+	if err != nil {
+		errMsg := "Error creating account: " + err.Error()
+		logger.Info().Msg(errMsg)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(errMsg))
+		return
+	}
+	w.Write([]byte("Account created!"))
 }
 
 func (c *Context) addUser(user, pass, email string) error {
@@ -62,60 +121,13 @@ func (c *Context) saveUser(user *User) error {
 	return err
 }
 
-func (c *Context) verifyPass(user, pass string) (bool, error) {
-	if len(user) == 0 || len(pass) == 0 {
-		return false, errors.New("The username and password cannot be empty")
-	}
-	hash, err := c.getPass(user)
-	if err != nil {
-		return false, err
-	}
-
-	_, err = passlib.Verify(pass, hash)
-	if err != nil {
-		// incorrect password, malformed hash, etc.
-		// either way, reject
-		return false, err
-	}
-
-	// TODO: the context has decided, as per its policy, that
-	// the hash which was used to validate the password
-	// should be changed. It has upgraded the hash using
-	// the verified password.
-	// if newHash != "" {
-	// 	c.storePass(user, newHash)
-	// }
-
-	return true, nil
-}
-
-func (c *Context) getPass(user string) (string, error) {
-	hash := ""
-	err := c.BoltDB.View(func(tx *bolt.Tx) error {
-		userBucket := tx.Bucket([]byte(user))
-		if userBucket == nil {
-			return errors.New("Could not find a user bucket for " + user)
-		}
-		hash = string(userBucket.Get([]byte("pass")))
-		return nil
-	})
-	return hash, err
-}
-
-func (c *Context) savePass(user, pass string) error {
-	if len(pass) == 0 {
-		return errors.New("The password cannot be empty")
-	}
-
-	hash, _ := passlib.Hash(pass)
-
+func (c *Context) deleteUser(user string) error {
 	err := c.BoltDB.Update(func(tx *bolt.Tx) error {
-		userBucket := tx.Bucket([]byte(user))
-		if userBucket == nil {
-			return errors.New("Could not find user bucket for " + user)
-		}
-		err := userBucket.Put([]byte("pass"), []byte(hash))
-		return err
+		return tx.DeleteBucket([]byte(user))
 	})
 	return err
+}
+
+func reqUser(req *web.Request) string {
+	return req.Header.Get("User")
 }

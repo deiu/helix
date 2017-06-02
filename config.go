@@ -20,6 +20,7 @@ type Config struct {
 	Hostname   string
 	Cert       string
 	Key        string
+	TokenAge   int64
 	HSTS       bool
 	BoltPath   string
 	FilePath   string
@@ -37,6 +38,7 @@ func NewConfig() *Config {
 		SkipVerify: false,
 		Cert:       "test_cert.pem",
 		Key:        "test_key.pem",
+		TokenAge:   5,
 		HSTS:       false,
 		BoltPath:   filepath.Join(os.TempDir(), "bolt.db"),
 		StaticPath: "/static/",

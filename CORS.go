@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func (c *Context) CORSMiddleware(w web.ResponseWriter, r *web.Request, next web.NextMiddlewareFunc) {
+func (c *Context) CORS(w web.ResponseWriter, r *web.Request, next web.NextMiddlewareFunc) {
 	origin := r.Request.Header.Get("Origin")
 	if len(origin) > 0 {
 		w.Header().Set("Access-Control-Allow-Origin", origin)

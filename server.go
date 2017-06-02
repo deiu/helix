@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/gocraft/web"
@@ -24,9 +25,10 @@ var (
 
 type (
 	Context struct {
-		Config *Config
-		Store  map[string]*Graph
-		BoltDB *bolt.DB
+		Config      *Config
+		Store       map[string]*Graph
+		BoltDB      *bolt.DB
+		AccessToken string
 	}
 )
 
@@ -38,44 +40,43 @@ func NewContext() *Context {
 	}
 }
 
-func NewServer(config *Config) (*web.Router, error) {
-	ctx := NewContext()
-	ctx.Config = config
-
-	if !config.Logging {
+func NewServer(ctx *Context) *web.Router {
+	if !ctx.Config.Logging {
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
 
-	if len(config.BoltPath) > 0 {
-		// Start Bolt
-		err := ctx.StartBolt()
-		if err != nil {
-			return &web.Router{}, err
-		}
-		defer ctx.BoltDB.Close()
-	}
-
 	currentRoot, _ := os.Getwd()
-	config.StaticDir = path.Join(currentRoot, config.StaticDir)
+	ctx.Config.StaticDir = path.Join(currentRoot, ctx.Config.StaticDir)
 
-	// Create router
+	// Create router and add middleware
 	router := web.New(*ctx).
-		Middleware((ctx).RequestLogger).
-		Middleware((ctx).CORSMiddleware).
-		Middleware(web.StaticMiddleware(config.StaticDir, web.StaticOption{Prefix: config.StaticPath})).
-		OptionsHandler((ctx).OptionsHandler).
-		Get("/:*", (ctx).GetHandler). // Match anything
-		Post("/:*", (ctx).PostHandler).
-		Put("/:*", (ctx).PutHandler).
-		Delete("/:*", (ctx).DeleteHandler).
-		Patch("/:*", (ctx).PatchHandler).
-		Get("/", (ctx).RootHandler) // reserved for a welcome/dashboard page
+		// Middleware(web.LoggerMiddleware). // turn off once done with tweaking
+		Middleware(ctx.CORS).
+		Middleware(ctx.Authentication).
+		Middleware(ctx.RequestLogger).
+		Middleware(web.StaticMiddleware(ctx.Config.StaticDir, web.StaticOption{Prefix: ctx.Config.StaticPath})).
+		OptionsHandler(ctx.OptionsHandler)
 
-	if config.Debug {
+	// Account routes
+	router.Get("/", ctx.RootHandler).
+		Post("/account/new", ctx.NewAccountHandler).
+		Post("/account/logout", ctx.LogoutHandler).
+		Post("/account/login", ctx.LoginHandler).
+		Post("/account/delete", ctx.DeleteAccountHandler).
+		Get("/account/", ctx.GetAccountHandler)
+
+	// API routes
+	router.Get("/:*", ctx.GetHandler).
+		Post("/:*", ctx.PostHandler).
+		Put("/:*", ctx.PutHandler).
+		Delete("/:*", ctx.DeleteHandler).
+		Patch("/:*", ctx.PatchHandler)
+
+	if ctx.Config.Debug {
 		router.Middleware(web.ShowErrorsMiddleware)
 	}
 
-	return router, nil
+	return router
 }
 
 func NewTLSConfig(cert, key string) (*tls.Config, error) {
@@ -132,7 +133,7 @@ func absoluteURI(req *http.Request) string {
 
 func (c *Context) StartBolt() error {
 	var err error
-	c.BoltDB, err = bolt.Open(c.Config.BoltPath, 0644, nil)
+	c.BoltDB, err = bolt.Open(c.Config.BoltPath, 0664, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}

@@ -1,17 +1,19 @@
 package helix
 
 import (
+	"os"
+
 	"github.com/gocraft/web"
 	"github.com/rs/zerolog"
-	"os"
 )
 
-func (c *Context) RequestLogger(w web.ResponseWriter, r *web.Request, next web.NextMiddlewareFunc) {
+func (c *Context) RequestLogger(w web.ResponseWriter, req *web.Request, next web.NextMiddlewareFunc) {
 	logger = zerolog.New(os.Stderr).With().
 		Timestamp().
-		Str("Method", r.Method).
-		Str("Path", r.Request.URL.String()).
+		Str("Method", req.Method).
+		Str("Path", req.Request.URL.String()).
+		Str("User", reqUser(req)).
 		Logger()
 
-	next(w, r)
+	next(w, req)
 }
