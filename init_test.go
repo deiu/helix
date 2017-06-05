@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	testCtx    *Context
+	testConfig *Config
 	testServer *httptest.Server
 	testClient *http.Client
 
@@ -23,16 +23,13 @@ var (
 
 func init() {
 	// uncomment for extra logging
-	config := NewConfig()
-	config.Debug = true
-	config.HSTS = true
-	config.StaticDir = testDir
-
-	testCtx = NewContext()
-	testCtx.Config = config
+	testConfig = NewConfig()
+	testConfig.Debug = true
+	testConfig.HSTS = true
+	testConfig.StaticDir = testDir
 
 	var err error
-	testServer, err = newTestServer(testCtx)
+	testServer, err = newTestServer(testConfig)
 	if err != nil {
 		println(err.Error())
 		return
@@ -41,14 +38,14 @@ func init() {
 	testClient = newTestClient()
 }
 
-func newTestServer(ctx *Context) (*httptest.Server, error) {
+func newTestServer(cfg *Config) (*httptest.Server, error) {
 	var ts *httptest.Server
 	// testServer
-	handler := NewServer(ctx)
+	handler := NewServer(cfg)
 	ts = httptest.NewUnstartedServer(handler)
 
 	// prepare TLS config
-	tlsCfg, err := NewTLSConfig(ctx.Config.Cert, ctx.Config.Key)
+	tlsCfg, err := NewTLSConfig(cfg.Cert, cfg.Key)
 	if err != nil {
 		return ts, err
 	}

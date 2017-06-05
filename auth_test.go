@@ -40,20 +40,20 @@ func Test_SavePassFail(t *testing.T) {
 	err := ctx.savePass(testUser, "")
 	assert.Error(t, err)
 
-	err = ctx.StartBolt()
+	err = ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	err = ctx.savePass("foo", testPass)
 	assert.Error(t, err)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
 func Test_VerifyPass(t *testing.T) {
 	ctx := NewContext()
 	ctx.Config = NewConfig()
 
-	err := ctx.StartBolt()
+	err := ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	ok, err := ctx.verifyPass("", "")
@@ -75,5 +75,5 @@ func Test_VerifyPass(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, ok)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }

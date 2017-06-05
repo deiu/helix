@@ -35,18 +35,17 @@ func Test_GetAccountHandlerBadAuthz(t *testing.T) {
 }
 
 func Test_AccountIntegration(t *testing.T) {
-	ctx := NewContext()
-	ctx.Config = NewConfig()
-	ctx.Config.StaticDir = testDir
+	config := NewConfig()
+	config.StaticDir = testDir
 
-	boltpath, err := newTempFile(ctx.Config.StaticDir, "tmpbolt")
+	boltpath, err := newTempFile(config.StaticDir, "tmpbolt")
 	assert.NoError(t, err)
-	ctx.Config.BoltPath = boltpath
+	config.BoltPath = boltpath
 
-	err = ctx.StartBolt()
+	err = config.StartBolt()
 	assert.NoError(t, err)
 
-	ts, err := newTestServer(ctx)
+	ts, err := newTestServer(config)
 	assert.NoError(t, err)
 
 	req, err := http.NewRequest("POST", ts.URL+"/account/new", nil)
@@ -78,11 +77,6 @@ func Test_AccountIntegration(t *testing.T) {
 	assert.NoError(t, err)
 	res.Body.Close()
 	assert.Equal(t, http.StatusOK, res.StatusCode)
-
-	user, err := ctx.getUser(testUser)
-	assert.NoError(t, err)
-	assert.Equal(t, testUser, user.Username)
-	assert.Equal(t, testEmail, user.Email)
 
 	req, err = http.NewRequest("POST", ts.URL+"/account/login", strings.NewReader(form.Encode()))
 	assert.NoError(t, err)
@@ -150,7 +144,7 @@ func Test_AccountIntegration(t *testing.T) {
 	res.Body.Close()
 	assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
 
-	boltCleanup(ctx)
+	boltCleanup(config)
 }
 
 func Test_LoginBad(t *testing.T) {
@@ -198,7 +192,7 @@ func Test_AddUser(t *testing.T) {
 	err = ctx.addUser(testUser, testPass, testEmail)
 	assert.Error(t, err)
 
-	err = ctx.StartBolt()
+	err = ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	err = ctx.addUser(testUser, testPass, testEmail)
@@ -209,14 +203,14 @@ func Test_AddUser(t *testing.T) {
 	assert.Equal(t, testUser, user.Username)
 	assert.Equal(t, testEmail, user.Email)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
 func Test_DeleteUser(t *testing.T) {
 	ctx := NewContext()
 	ctx.Config = NewConfig()
 
-	err := ctx.StartBolt()
+	err := ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	err = ctx.addUser(testUser, testPass, testEmail)
@@ -225,14 +219,14 @@ func Test_DeleteUser(t *testing.T) {
 	err = ctx.deleteUser(testUser)
 	assert.NoError(t, err)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
 func Test_SaveUserFail(t *testing.T) {
 	ctx := NewContext()
 	ctx.Config = NewConfig()
 
-	err := ctx.StartBolt()
+	err := ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	user := NewUser()
@@ -240,14 +234,14 @@ func Test_SaveUserFail(t *testing.T) {
 	err = ctx.saveUser(user)
 	assert.Error(t, err)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
 func Test_GetUser(t *testing.T) {
 	ctx := NewContext()
 	ctx.Config = NewConfig()
 
-	err := ctx.StartBolt()
+	err := ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	err = ctx.addUser(testUser, testPass, testEmail)
@@ -261,13 +255,13 @@ func Test_GetUser(t *testing.T) {
 	assert.Equal(t, testUser, user.Username)
 	assert.Equal(t, testEmail, user.Email)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
-func boltCleanup(ctx *Context) {
-	ctx.BoltDB.Close()
-	err := os.Remove(ctx.Config.BoltPath)
+func boltCleanup(cfg *Config) {
+	cfg.BoltDB.Close()
+	err := os.Remove(cfg.BoltPath)
 	if err != nil {
-		panic("Failed to remove " + ctx.Config.BoltPath)
+		panic("Failed to remove " + cfg.BoltPath)
 	}
 }

@@ -66,13 +66,13 @@ func Test_StartBolt(t *testing.T) {
 	ctx.Config = NewConfig()
 	ctx.Config.BoltPath = os.TempDir()
 
-	err := ctx.StartBolt()
+	err := ctx.Config.StartBolt()
 	assert.Error(t, err)
 
 	ctx.Config = NewConfig()
-	err = ctx.StartBolt()
+	err = ctx.Config.StartBolt()
 	assert.NoError(t, err)
-	defer ctx.BoltDB.Close()
+	defer ctx.Config.BoltDB.Close()
 
 	err = os.Remove(ctx.Config.BoltPath)
 	assert.NoError(t, err)

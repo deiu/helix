@@ -28,7 +28,7 @@ func Test_GetAuthzUserFromToken(t *testing.T) {
 	assert.NoError(t, err)
 	ctx.Config.BoltPath = boltpath
 
-	err = ctx.StartBolt()
+	err = ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	tokenType := "Authorization"
@@ -82,7 +82,7 @@ func Test_GetAuthzUserFromToken(t *testing.T) {
 	assert.Error(t, err)
 	assert.Empty(t, webid)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
 func Test_PersistedTokens(t *testing.T) {
@@ -94,7 +94,7 @@ func Test_PersistedTokens(t *testing.T) {
 	assert.NoError(t, err)
 	ctx.Config.BoltPath = boltpath
 
-	err = ctx.StartBolt()
+	err = ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	tokenType := "Authorization"
@@ -194,7 +194,7 @@ func Test_PersistedTokens(t *testing.T) {
 	err = ctx.deletePersistedToken(tokenType, host, token)
 	assert.NoError(t, err)
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
 func Test_NewAuthzToken(t *testing.T) {
@@ -206,7 +206,7 @@ func Test_NewAuthzToken(t *testing.T) {
 	assert.NoError(t, err)
 	ctx.Config.BoltPath = boltpath
 
-	err = ctx.StartBolt()
+	err = ctx.Config.StartBolt()
 	assert.NoError(t, err)
 
 	err = ctx.addUser(testUser, testPass, testEmail)
@@ -220,7 +220,7 @@ func Test_NewAuthzToken(t *testing.T) {
 
 	assert.Equal(t, w.Header().Get("Token"), rec.Header().Get("Token"))
 
-	ctx.BoltDB.Close()
+	ctx.Config.BoltDB.Close()
 
 	rec = httptest.NewRecorder()
 	w = web.ResponseWriter(&testWriter{ResponseWriter: rec})
@@ -228,7 +228,7 @@ func Test_NewAuthzToken(t *testing.T) {
 	ctx.newAuthzToken(w, req, testUser)
 	assert.Empty(t, rec.Header().Get("Token"))
 
-	boltCleanup(ctx)
+	boltCleanup(ctx.Config)
 }
 
 func Test_TokenDateIsValid(t *testing.T) {

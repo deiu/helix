@@ -68,7 +68,7 @@ func (ctx *Context) newPersistedToken(tokenType, host string, values map[string]
 		return token, errors.New("Missing token type when trying to generate new token")
 	}
 	// bucket(host) -> bucket(type) -> values
-	err := ctx.BoltDB.Update(func(tx *bolt.Tx) error {
+	err := ctx.Config.BoltDB.Update(func(tx *bolt.Tx) error {
 		userBucket, err := tx.CreateBucketIfNotExists([]byte(host))
 		if err != nil {
 			return err
@@ -98,7 +98,7 @@ func (ctx *Context) getPersistedToken(tokenType, host, token string) (map[string
 	if len(tokenType) == 0 || len(host) == 0 || len(token) == 0 {
 		return tokenValues, errors.New("Can't retrieve token from db. tokenType, host and token value are requrired.")
 	}
-	err := ctx.BoltDB.View(func(tx *bolt.Tx) error {
+	err := ctx.Config.BoltDB.View(func(tx *bolt.Tx) error {
 		userBucket := tx.Bucket([]byte(host))
 		if userBucket == nil {
 			return errors.New(host + " bucket not found!")
@@ -121,7 +121,7 @@ func (ctx *Context) getTokenByOrigin(tokenType, host, origin string) (string, er
 	if len(tokenType) == 0 || len(host) == 0 || len(origin) == 0 {
 		return token, errors.New("Can't retrieve token from db. tokenType, host and token value are requrired.")
 	}
-	err := ctx.BoltDB.View(func(tx *bolt.Tx) error {
+	err := ctx.Config.BoltDB.View(func(tx *bolt.Tx) error {
 		userBucket := tx.Bucket([]byte(host))
 		if userBucket == nil {
 			return errors.New(host + " bucket not found!")
@@ -152,7 +152,7 @@ func (ctx *Context) deletePersistedToken(tokenType, host, token string) error {
 	if len(tokenType) == 0 || len(host) == 0 || len(token) == 0 {
 		return errors.New("Can't retrieve token from db. tokenType, host and token value are requrired.")
 	}
-	err := ctx.BoltDB.Update(func(tx *bolt.Tx) error {
+	err := ctx.Config.BoltDB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(host))
 		if b == nil {
 			return errors.New("No bucket for host " + host)
@@ -169,7 +169,7 @@ func (ctx *Context) deletePersistedToken(tokenType, host, token string) error {
 
 func (ctx *Context) getTokensByType(tokenType, host string) (map[string]map[string]string, error) {
 	tokens := make(map[string]map[string]string)
-	err := ctx.BoltDB.View(func(tx *bolt.Tx) error {
+	err := ctx.Config.BoltDB.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte(host))
 		if b == nil {

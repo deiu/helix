@@ -19,7 +19,7 @@ func NewUser() *User {
 }
 
 func (c *Context) GetAccountHandler(w web.ResponseWriter, req *web.Request) {
-	if len(reqUser(req)) == 0 {
+	if len(c.User) == 0 {
 		c.AuthenticationRequired(w, req)
 	}
 }
@@ -42,22 +42,20 @@ func (c *Context) LoginHandler(w web.ResponseWriter, req *web.Request) {
 
 func (c *Context) LogoutHandler(w web.ResponseWriter, req *web.Request) {
 	// delete session/cookie
-	user := reqUser(req)
-	if len(user) == 0 {
+	if len(c.User) == 0 {
 		c.AuthenticationRequired(w, req)
 		return
 	}
 }
 
 func (c *Context) DeleteAccountHandler(w web.ResponseWriter, req *web.Request) {
-	user := reqUser(req)
-	if len(user) == 0 {
+	if len(c.User) == 0 {
 		c.AuthenticationRequired(w, req)
 		return
 	}
-	err := c.deleteUser(user)
+	err := c.deleteUser(c.User)
 	if err != nil {
-		logger.Info().Msg("Error closing account for " + user + ":" + err.Error())
+		logger.Info().Msg("Error closing account for " + c.User + ":" + err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -73,6 +71,8 @@ func (c *Context) NewAccountHandler(w web.ResponseWriter, req *web.Request) {
 		w.Write([]byte(errMsg))
 		return
 	}
+	// start new session
+	c.User = req.FormValue("username")
 	w.Write([]byte("Account created!"))
 }
 
@@ -96,7 +96,7 @@ func (c *Context) addUser(user, pass, email string) error {
 func (c *Context) getUser(username string) (*User, error) {
 	user := NewUser()
 
-	err := c.BoltDB.View(func(tx *bolt.Tx) error {
+	err := c.Config.BoltDB.View(func(tx *bolt.Tx) error {
 		userBucket := tx.Bucket([]byte(username))
 		if userBucket == nil {
 			return errors.New("Could not find a user bucket for " + username)
@@ -108,7 +108,7 @@ func (c *Context) getUser(username string) (*User, error) {
 }
 
 func (c *Context) saveUser(user *User) error {
-	err := c.BoltDB.Update(func(tx *bolt.Tx) error {
+	err := c.Config.BoltDB.Update(func(tx *bolt.Tx) error {
 		userBucket, err := tx.CreateBucketIfNotExists([]byte(user.Username))
 		if err != nil {
 			return err
@@ -122,12 +122,8 @@ func (c *Context) saveUser(user *User) error {
 }
 
 func (c *Context) deleteUser(user string) error {
-	err := c.BoltDB.Update(func(tx *bolt.Tx) error {
+	err := c.Config.BoltDB.Update(func(tx *bolt.Tx) error {
 		return tx.DeleteBucket([]byte(user))
 	})
 	return err
-}
-
-func reqUser(req *web.Request) string {
-	return req.Header.Get("User")
 }

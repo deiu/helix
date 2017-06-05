@@ -7,9 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/gocraft/web"
 	"github.com/rs/zerolog"
 )
@@ -27,7 +25,7 @@ type (
 	Context struct {
 		Config      *Config
 		Store       map[string]*Graph
-		BoltDB      *bolt.DB
+		User        string
 		AccessToken string
 	}
 )
@@ -36,11 +34,13 @@ func NewContext() *Context {
 	return &Context{
 		Config: NewConfig(),
 		Store:  make(map[string]*Graph),
-		BoltDB: &bolt.DB{},
+		User:   "",
 	}
 }
 
-func NewServer(ctx *Context) *web.Router {
+func NewServer(cfg *Config) *web.Router {
+	ctx := NewContext()
+	ctx.Config = cfg
 	if !ctx.Config.Logging {
 		zerolog.SetGlobalLevel(zerolog.Disabled)
 	}
@@ -129,13 +129,4 @@ func absoluteURI(req *http.Request) string {
 		port = ""
 	}
 	return scheme + "://" + host + port + req.URL.Path
-}
-
-func (c *Context) StartBolt() error {
-	var err error
-	c.BoltDB, err = bolt.Open(c.Config.BoltPath, 0664, &bolt.Options{Timeout: 1 * time.Second})
-	if err != nil {
-		return err
-	}
-	return nil
 }

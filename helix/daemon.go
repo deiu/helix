@@ -43,20 +43,18 @@ func main() {
 
 	println("Listening on " + config.Hostname + ":" + config.Port)
 
-	ctx := helix.NewContext()
-
 	if len(config.BoltPath) > 0 {
 		// Start Bolt
-		err := ctx.StartBolt()
+		err := config.StartBolt()
 		if err != nil {
 			println(err.Error())
 			return
 		}
-		defer ctx.BoltDB.Close()
+		defer config.BoltDB.Close()
 	}
 
 	// prepare new handler
-	handler := helix.NewServer(ctx)
+	handler := helix.NewServer(config)
 	// prepare server
 	s := &http.Server{
 		Addr:    ":" + config.Port,

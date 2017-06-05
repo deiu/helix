@@ -15,7 +15,7 @@ import (
 )
 
 func (c *Context) AuthenticationRequired(w web.ResponseWriter, req *web.Request) {
-	if len(reqUser(req)) == 0 {
+	if len(c.User) == 0 {
 		authn := webidrsa.NewAuthenticateHeader(req.Request)
 		w.Header().Set("WWW-Authenticate", authn)
 		w.WriteHeader(http.StatusUnauthorized)
@@ -44,7 +44,9 @@ func (c *Context) Authentication(w web.ResponseWriter, req *web.Request, next we
 			errMsg = "Could not authenticate user: " + err.Error()
 		}
 	}
-	req.Header.Set("User", user)
+	// set the user
+	c.User = user
+
 	logger = zerolog.New(os.Stderr).With().
 		Timestamp().
 		Str("Method", req.Method).
@@ -86,7 +88,7 @@ func (c *Context) verifyPass(user, pass string) (bool, error) {
 
 func (c *Context) getPass(user string) (string, error) {
 	hash := ""
-	err := c.BoltDB.View(func(tx *bolt.Tx) error {
+	err := c.Config.BoltDB.View(func(tx *bolt.Tx) error {
 		userBucket := tx.Bucket([]byte(user))
 		if userBucket == nil {
 			return errors.New("Could not find a user bucket for " + user)
@@ -104,7 +106,7 @@ func (c *Context) savePass(user, pass string) error {
 
 	hash, _ := passlib.Hash(pass)
 
-	err := c.BoltDB.Update(func(tx *bolt.Tx) error {
+	err := c.Config.BoltDB.Update(func(tx *bolt.Tx) error {
 		userBucket := tx.Bucket([]byte(user))
 		if userBucket == nil {
 			return errors.New("Could not find user bucket for " + user)

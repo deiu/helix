@@ -6,6 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/boltdb/bolt"
 )
 
 type Config struct {
@@ -23,6 +26,7 @@ type Config struct {
 	TokenAge   int64
 	HSTS       bool
 	BoltPath   string
+	BoltDB     *bolt.DB
 	FilePath   string
 	DataPath   string
 	ACLPath    string
@@ -41,6 +45,7 @@ func NewConfig() *Config {
 		TokenAge:   5,
 		HSTS:       false,
 		BoltPath:   filepath.Join(os.TempDir(), "bolt.db"),
+		BoltDB:     &bolt.DB{},
 		StaticPath: "/static/",
 		FilePath:   "/files/",
 		DataPath:   "/data/",
@@ -64,4 +69,13 @@ func GetCurrentRoot() string {
 		root += "/"
 	}
 	return root
+}
+
+func (c *Config) StartBolt() error {
+	var err error
+	c.BoltDB, err = bolt.Open(c.BoltPath, 0664, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		return err
+	}
+	return nil
 }
